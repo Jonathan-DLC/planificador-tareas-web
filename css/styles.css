@@ -1,0 +1,837 @@
+/* =========================================================
+   ESCAMPA
+   Idea de diseño: un escritorio de noche frente a una ventana
+   con lluvia. Las tareas se anotan en un cuaderno cuadriculado
+   y, cuando no queda ninguna pendiente, escampa: la lluvia se
+   detiene y la ventana muestra el amanecer.
+   En el Sprint 1 no hay JavaScript, así que el cambio de clima,
+   los filtros y el conteo se resuelven con :has() y contadores.
+   ========================================================= */
+
+/* 1. VARIABLES: se cambian en un solo lugar */
+:root {
+  --noche: #131A2E;          /* fondo de la página */
+  --escritorio: #1C2440;     /* paneles oscuros (formulario) */
+  --escritorio-borde: #313C64;
+  --campo: #121931;          /* fondo de inputs */
+  --texto: #E7ECF5;
+  --texto-suave: #A3AFC7;
+  --marco: #2A2340;          /* madera de la ventana */
+  --alfeizar: #342C4E;
+  --papel: #E8EDF3;          /* cuaderno cuadriculado */
+  --cuadricula: #CFD9E6;
+  --margen: #D9637D;         /* línea roja del cuaderno y prioridad alta */
+  --tinta: #1F2B47;
+  --tinta-suave: #4E5D7C;
+  --lampara: #F5B357;        /* luz cálida: acción principal */
+  --lampara-hover: #F8C47A;
+  --lluvia: #9DBBE0;
+  --error: #F29AAE;
+
+  --fuente-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --fuente-mano: 'Shantell Sans', 'Comic Sans MS', cursive;
+
+  /* Bootstrap lee estas variables, así sus componentes heredan la paleta */
+  --bs-body-font-family: var(--fuente-ui);
+  --bs-body-font-size: 1rem;
+  --bs-body-line-height: 1.6;
+  --bs-body-bg: var(--noche);
+  --bs-body-color: var(--texto);
+}
+
+/* 2. BASE */
+body {
+  background-color: var(--noche);
+  color: var(--texto);
+}
+
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--lampara);
+  outline-offset: 2px;
+}
+
+/* Bootstrap deja el padding lateral en 12px; en celular queremos 16px */
+.container-xl {
+  --bs-gutter-x: 2rem;
+}
+
+/* 3. ENCABEZADO */
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.marca-icono {
+  font-size: 1.75rem;
+  color: var(--lampara);
+}
+
+.marca-nombre {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.marca-sub,
+.barra-fecha {
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+/* 4. VENTANA: cielo, ciudad, lluvia y el texto escrito en el vidrio.
+   Orden de capas: cielo < sol/luna < ciudad < lluvia < marco < texto */
+.ventana {
+  position: relative;
+  height: clamp(300px, 34vw, 400px);
+  border: 12px solid var(--marco);
+  border-bottom-width: 0;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0B1124 0%, #1B2A52 100%);
+}
+
+.cielo-amanecer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #3F4688 0%, #A9698E 58%, #F3A67E 100%);
+  opacity: 0;
+  transition: opacity 2.4s ease;
+}
+
+.luna,
+.sol {
+  position: absolute;
+  border-radius: 50%;
+  transition: transform 2.4s ease, opacity 2.4s ease;
+}
+
+.luna {
+  top: 12%;
+  right: 13%;
+  width: 52px;
+  height: 52px;
+  background: #E6ECF7;
+  opacity: 0.85;
+}
+
+/* El sol espera escondido detrás de la ciudad hasta que escampa */
+.sol {
+  bottom: 14%;
+  right: 20%;
+  width: 120px;
+  height: 120px;
+  background: #FFD49C;
+  transform: translateY(160%);
+}
+
+.ciudad {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+/* Las ventanas encendidas son un patrón de puntos sobre cada edificio */
+.edificio {
+  flex: 1 1 0;
+  height: var(--alto);
+  border-radius: 2px 2px 0 0;
+  background-color: #0A0E1C;
+  background-image: radial-gradient(circle, rgba(255, 207, 138, 0.9) 1.2px, transparent 1.8px);
+  background-size: 11px 15px;
+  background-position: 4px 8px;
+  transition: background-color 2.4s ease;
+}
+
+.edificio:nth-child(3n) {
+  background-image: radial-gradient(circle, rgba(255, 207, 138, 0.35) 1.2px, transparent 1.8px);
+}
+
+.edificio:nth-child(4n + 1) {
+  background-image: none;
+}
+
+.lluvia {
+  position: absolute;
+  inset: 0;
+  transition: opacity 1.6s ease;
+}
+
+.gota {
+  position: absolute;
+  top: -40px;
+  left: var(--x);
+  width: 1.5px;
+  height: var(--h);
+  border-radius: 2px;
+  background: linear-gradient(to bottom, rgba(157, 187, 224, 0), rgba(157, 187, 224, 0.85));
+  animation: caer var(--d) linear var(--r) infinite;
+}
+
+@keyframes caer {
+  to {
+    transform: translateY(460px);
+  }
+}
+
+/* Los travesaños de la ventana la dividen en cuatro vidrios */
+.ventana::before,
+.ventana::after {
+  content: "";
+  position: absolute;
+  background: var(--marco);
+  z-index: 1;
+}
+
+.ventana::before {
+  top: 0;
+  bottom: 0;
+  left: 62%;
+  width: 10px;
+}
+
+.ventana::after {
+  left: 0;
+  right: 0;
+  top: 64%;
+  height: 10px;
+}
+
+/* El titular está escrito con el dedo sobre el vidrio empañado */
+.vidrio {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 62%;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  z-index: 2;
+}
+
+.vidrio-escrito {
+  margin: 0 0 0.75rem;
+  max-width: 14ch;
+  font-family: var(--fuente-mano);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.6vw, 3.5rem);
+  line-height: 1.08;
+  color: rgba(234, 241, 252, 0.82);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.5), 0 0 18px rgba(180, 208, 245, 0.45);
+  transform: rotate(-2deg);
+  transform-origin: left top;
+}
+
+.vidrio-nota {
+  max-width: 34ch;
+  font-size: 1rem;
+  color: #D3DCEB;
+}
+
+.escrito-escampo {
+  display: none;
+}
+
+/* 5. ESCAMPA: si no queda ninguna casilla sin marcar, para de llover */
+:root:not(:has(.tarea-check:not(:checked))) .lluvia {
+  opacity: 0;
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .cielo-amanecer {
+  opacity: 1;
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .luna {
+  opacity: 0;
+  transform: translateY(-160%);
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .sol {
+  transform: translateY(0);
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .edificio {
+  background-color: #3A2D4E;
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .escrito-lluvia {
+  display: none;
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .escrito-escampo {
+  display: inline;
+}
+
+:root:not(:has(.tarea-check:not(:checked))) .vidrio-escrito {
+  color: #FFF6EC;
+}
+
+/* 6. ALFÉIZAR Y WALKMAN */
+.alfeizar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 2.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--alfeizar);
+  border-radius: 0 0 14px 14px;
+  border-top: 4px solid var(--marco);
+}
+
+.walkman {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.walkman-play,
+.walkman-reiniciar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.walkman-play {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  background: var(--lampara);
+  color: #1F1606;
+  font-size: 1.5rem;
+}
+
+.walkman-play:hover {
+  background: var(--lampara-hover);
+}
+
+.walkman-reiniciar {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(231, 236, 245, 0.25);
+  background: transparent;
+  color: var(--texto);
+  font-size: 1.125rem;
+}
+
+.walkman-pantalla {
+  display: flex;
+  flex-direction: column;
+  min-width: 7.5rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 6px;
+  background: #0D1322;
+  border: 1px solid #3E4870;
+  line-height: 1.2;
+}
+
+.walkman-tiempo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--lluvia);
+}
+
+.walkman-estado {
+  font-size: 0.8125rem;
+  color: var(--texto-suave);
+}
+
+.mezclador {
+  flex: 1 1 520px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 0.5rem 1.25rem;
+}
+
+.canal-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+/* Bootstrap compila los colores del range en Sass, así que se pisan
+   directamente en los pseudoelementos de cada navegador */
+.alfeizar .form-range {
+  height: 1.75rem;
+}
+
+.alfeizar .form-range::-webkit-slider-thumb {
+  background-color: var(--lampara);
+}
+
+.alfeizar .form-range::-moz-range-thumb {
+  background-color: var(--lampara);
+}
+
+.alfeizar .form-range::-webkit-slider-runnable-track {
+  background-color: rgba(231, 236, 245, 0.18);
+}
+
+.alfeizar .form-range::-moz-range-track {
+  background-color: rgba(231, 236, 245, 0.18);
+}
+
+.alfeizar .form-range:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 1px var(--alfeizar), 0 0 0 0.25rem rgba(245, 179, 87, 0.4);
+}
+
+.alfeizar .form-range:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 1px var(--alfeizar), 0 0 0 0.25rem rgba(245, 179, 87, 0.4);
+}
+
+/* 7. ESCRITORIO: formulario y cuaderno */
+.escritorio {
+  margin-top: 0.5rem;
+  padding-top: 2rem;
+}
+
+/* 7.1 Formulario (panel oscuro) */
+.ficha {
+  padding: 1.5rem;
+  background: var(--escritorio);
+  border: 1px solid var(--escritorio-borde);
+  border-radius: 12px;
+}
+
+.ficha-titulo {
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ficha .form-label {
+  margin-bottom: 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.opcional {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.ficha .form-control,
+.ficha .form-select {
+  min-height: 44px;
+  background-color: var(--campo);
+  border-color: var(--escritorio-borde);
+  color: var(--texto);
+}
+
+.ficha .form-control::placeholder {
+  color: #7F8BA6;
+}
+
+.ficha .form-control:focus,
+.ficha .form-select:focus {
+  border-color: var(--lampara);
+  box-shadow: 0 0 0 0.2rem rgba(245, 179, 87, 0.28);
+}
+
+.ficha .form-text {
+  color: var(--texto-suave);
+}
+
+/* Validación nativa del navegador: :user-invalid solo marca el campo
+   después de que la persona interactúa con él (no al cargar la página) */
+.ficha .form-control:user-invalid {
+  border-color: var(--error);
+}
+
+.ficha .form-control:user-invalid ~ .form-text {
+  display: none;
+}
+
+.ficha .form-control:user-invalid ~ .invalid-feedback {
+  display: block;
+  color: var(--error);
+}
+
+.ficha fieldset legend {
+  float: none;
+  width: auto;
+}
+
+.prioridades {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.btn-prioridad {
+  --bs-btn-color: var(--texto-suave);
+  --bs-btn-border-color: var(--escritorio-borde);
+  --bs-btn-hover-color: var(--texto);
+  --bs-btn-hover-border-color: #4A5784;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* El punto de color repite el código de prioridad del cuaderno */
+.btn-prioridad::before {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--punto);
+}
+
+.btn-prioridad-baja { --punto: #8FB0DA; }
+.btn-prioridad-media { --punto: var(--lampara); }
+.btn-prioridad-alta { --punto: var(--margen); }
+
+.btn-check:checked + .btn-prioridad {
+  color: var(--texto);
+  background: rgba(231, 236, 245, 0.08);
+  border-color: var(--punto);
+}
+
+.btn-lampara {
+  --bs-btn-bg: var(--lampara);
+  --bs-btn-color: #1F1606;
+  --bs-btn-border-color: var(--lampara);
+  --bs-btn-hover-bg: var(--lampara-hover);
+  --bs-btn-hover-color: #1F1606;
+  --bs-btn-hover-border-color: var(--lampara-hover);
+  --bs-btn-active-bg: #E9A43F;
+  --bs-btn-active-color: #1F1606;
+  --bs-btn-active-border-color: #E9A43F;
+  --bs-btn-focus-shadow-rgb: 245, 179, 87;
+  min-height: 48px;
+  font-weight: 700;
+}
+
+/* 7.2 Cuaderno cuadriculado */
+.cuaderno {
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 1.5rem;
+  border-radius: 6px;
+  color: var(--tinta);
+  background-color: var(--papel);
+  background-image:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  background-size: 24px 24px;
+  box-shadow: 0 24px 48px -24px rgba(4, 7, 16, 0.8);
+  counter-reset: total hechas;
+}
+
+/* La línea roja del margen: las casillas quedan a su izquierda */
+.cuaderno::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 64px;
+  width: 2px;
+  background: var(--margen);
+  opacity: 0.7;
+}
+
+.cuaderno-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1.5rem 1.25rem 1rem 84px;
+}
+
+.cuaderno-titulo {
+  margin: 0;
+  font-family: var(--fuente-mano);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.btn-filtro {
+  --bs-btn-color: var(--tinta-suave);
+  --bs-btn-border-color: #B5C3D6;
+  --bs-btn-hover-color: var(--tinta);
+  --bs-btn-hover-bg: rgba(31, 43, 71, 0.06);
+  --bs-btn-hover-border-color: var(--tinta-suave);
+  min-height: 40px;
+  border-radius: 999px;
+  background: var(--papel);
+  font-size: 0.9375rem;
+}
+
+.btn-check:checked + .btn-filtro {
+  color: var(--papel);
+  background: var(--tinta);
+  border-color: var(--tinta);
+}
+
+.btn-check:focus-visible + .btn {
+  outline: 2px solid var(--lampara);
+  outline-offset: 2px;
+}
+
+.tareas {
+  margin: 0;
+}
+
+.tarea {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  column-gap: 20px;
+  align-items: start;
+  padding: 0.875rem 0.75rem 0.875rem 10px;
+  counter-increment: total;
+}
+
+.tarea:has(.tarea-check:checked) {
+  counter-increment: total hechas;
+}
+
+.tarea-check.form-check-input {
+  --bs-form-check-bg: var(--papel);
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0.5rem auto 0;
+  border: 2px solid var(--tinta-suave);
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+
+.tarea-check.form-check-input:checked {
+  background-color: var(--tinta);
+  border-color: var(--tinta);
+}
+
+.tarea-check.form-check-input:focus {
+  border-color: var(--tinta);
+  box-shadow: 0 0 0 0.2rem rgba(245, 179, 87, 0.5);
+}
+
+.tarea-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 62ch;
+}
+
+.tarea-titulo {
+  font-family: var(--fuente-mano);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.tarea-desc {
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+/* Tarea hecha: tachada con la misma tinta, como en un cuaderno */
+.tarea:has(.tarea-check:checked) .tarea-titulo {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: var(--tinta-suave);
+}
+
+.tarea:has(.tarea-check:checked) .tarea-desc,
+.tarea:has(.tarea-check:checked) .tarea-meta {
+  opacity: 0.6;
+}
+
+.tarea-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 1rem;
+  padding-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--tinta-suave);
+}
+
+.prioridad {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 700;
+  color: var(--tinta);
+}
+
+.prioridad::before {
+  content: "";
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: var(--punto);
+}
+
+.prioridad-alta { --punto: var(--margen); }
+.prioridad-media { --punto: #E39A33; }
+.prioridad-baja { --punto: #6F93C2; }
+
+.fecha-hoy {
+  font-weight: 700;
+  color: var(--tinta);
+}
+
+.fecha-atrasada {
+  font-weight: 700;
+  color: #A8344F;
+}
+
+.tarea-acciones {
+  display: flex;
+}
+
+.btn-icono {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--tinta-suave);
+}
+
+.btn-icono:hover {
+  color: var(--tinta);
+  background: rgba(31, 43, 71, 0.08);
+}
+
+/* Filtros sin JavaScript. Se ocultan con visibility (no con display:none)
+   para que los contadores sigan contando las tareas escondidas */
+.cuaderno:has(#filtro-pendientes:checked) .tarea:has(.tarea-check:checked),
+.cuaderno:has(#filtro-hechas:checked) .tarea:not(:has(.tarea-check:checked)) {
+  visibility: hidden;
+  position: absolute;
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.vacio {
+  display: none;
+  margin: 0.5rem 1.25rem 0 84px;
+  font-family: var(--fuente-mano);
+  font-size: 1.125rem;
+  color: var(--tinta-suave);
+}
+
+.cuaderno:has(#filtro-pendientes:checked):not(:has(.tarea-check:not(:checked))) .vacio-pendientes,
+.cuaderno:has(#filtro-hechas:checked):not(:has(.tarea-check:checked)) .vacio-hechas {
+  display: block;
+}
+
+.progreso {
+  margin: 1rem 1.25rem 0 84px;
+  font-size: 0.875rem;
+  color: var(--tinta-suave);
+}
+
+.progreso::before {
+  content: counter(hechas) " de " counter(total) " tareas hechas";
+}
+
+/* 8. PIE */
+.pie {
+  padding-top: 3rem;
+  padding-bottom: 2rem;
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+/* 9. CELULAR */
+@media (max-width: 575.98px) {
+  .ventana {
+    height: 340px;
+  }
+
+  /* En pantallas angostas el texto ocupa todo el ancho y el travesaño vertical estorba */
+  .ventana::before {
+    display: none;
+  }
+
+  .vidrio {
+    width: 100%;
+  }
+
+  /* El titular ocupa el vidrio de arriba completo: la luna no cabe sin taparlo */
+  .luna {
+    display: none;
+  }
+
+  .cuaderno::before {
+    left: 52px;
+  }
+
+  .cuaderno-encabezado,
+  .vacio,
+  .progreso {
+    padding-left: 0;
+    margin-left: 68px;
+  }
+
+  .cuaderno-encabezado {
+    padding-left: 0;
+  }
+
+  .tarea {
+    grid-template-columns: 40px minmax(0, 1fr);
+    column-gap: 16px;
+    padding-left: 4px;
+  }
+
+  /* Los botones bajan debajo del texto para no apretar el título */
+  .tarea-acciones {
+    grid-column: 2;
+    margin-left: -10px;
+  }
+}
+
+/* 10. MOVIMIENTO REDUCIDO: la lluvia queda quieta y nada se anima */
+@media (prefers-reduced-motion: reduce) {
+  .gota {
+    animation: none;
+    transform: translateY(var(--y));
+  }
+
+  .cielo-amanecer,
+  .luna,
+  .sol,
+  .lluvia,
+  .edificio {
+    transition: none;
+  }
+}
