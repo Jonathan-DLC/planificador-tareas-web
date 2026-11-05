@@ -77,8 +77,9 @@ p {
 }
 
 .marca-icono {
-  font-size: 1.75rem;
-  color: var(--lampara);
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 .marca-nombre {
