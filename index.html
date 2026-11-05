@@ -29,7 +29,7 @@
         <p class="marca-sub">Planificador de tareas</p>
       </div>
     </div>
-    <p class="barra-fecha">Martes 3 de noviembre</p>
+    <p class="barra-fecha">Jueves 5 de noviembre</p>
   </header>
 
   <main class="container-xl">
@@ -169,39 +169,50 @@
         <section class="ficha" data-bs-theme="dark" aria-labelledby="titulo-form">
           <h2 id="titulo-form" class="ficha-titulo">Nueva tarea</h2>
 
-          <form action="#" method="get">
+          <!-- novalidate: la validación la hace app.js para mostrar la alerta de Bootstrap -->
+          <form id="newTaskForm" novalidate>
             <div class="mb-3">
-              <label for="campo-titulo" class="form-label">Título</label>
-              <input type="text" class="form-control" id="campo-titulo" name="titulo" required minlength="3"
-                maxlength="60" pattern=".*\S.*" placeholder="Ej.: Maquetar el encabezado"
-                aria-describedby="ayuda-titulo error-titulo">
-              <div id="ayuda-titulo" class="form-text">Entre 3 y 60 caracteres.</div>
-              <div id="error-titulo" class="invalid-feedback">Escribe un título de al menos 3 caracteres.</div>
+              <label for="newTaskNameInput" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="newTaskNameInput" name="nombre" required maxlength="60"
+                placeholder="Ej.: Maquetar el encabezado" aria-describedby="ayuda-nombre error-nombre">
+              <div id="ayuda-nombre" class="form-text">Entre 3 y 60 caracteres.</div>
+              <div id="error-nombre" class="invalid-feedback">Escribe un nombre de al menos 3 caracteres.</div>
             </div>
 
             <div class="mb-3">
-              <label for="campo-desc" class="form-label">Descripción <span class="opcional">(opcional)</span></label>
-              <textarea class="form-control" id="campo-desc" name="descripcion" rows="3" maxlength="200"
-                placeholder="Qué vas a hacer y cuándo cuenta como terminada"
-                aria-describedby="ayuda-desc"></textarea>
-              <div id="ayuda-desc" class="form-text">Máximo 200 caracteres.</div>
+              <label for="newTaskDescriptionInput" class="form-label">Descripción</label>
+              <textarea class="form-control" id="newTaskDescriptionInput" name="descripcion" rows="3" required
+                maxlength="200" placeholder="Qué vas a hacer y cuándo cuenta como terminada"
+                aria-describedby="ayuda-descripcion error-descripcion"></textarea>
+              <div id="ayuda-descripcion" class="form-text">Máximo 200 caracteres.</div>
+              <div id="error-descripcion" class="invalid-feedback">Escribe una descripción.</div>
             </div>
 
             <div class="row g-3 mb-3">
               <div class="col-sm-6 col-lg-12 col-xl-6">
-                <label for="campo-fecha" class="form-label">Fecha límite</label>
-                <input type="date" class="form-control" id="campo-fecha" name="fecha" required
+                <label for="newTaskDateInput" class="form-label">Fecha de entrega</label>
+                <input type="date" class="form-control" id="newTaskDateInput" name="fechaEntrega" required
                   aria-describedby="error-fecha">
-                <div id="error-fecha" class="invalid-feedback">Elige una fecha límite.</div>
+                <div id="error-fecha" class="invalid-feedback">Elige la fecha de entrega.</div>
               </div>
               <div class="col-sm-6 col-lg-12 col-xl-6">
-                <label for="campo-categoria" class="form-label">Categoría</label>
-                <select class="form-select" id="campo-categoria" name="categoria">
-                  <option value="sprint-1">Sprint 1</option>
-                  <option value="estudio">Estudio</option>
-                  <option value="personal">Personal</option>
+                <label for="newTaskStatusSelect" class="form-label">Estado</label>
+                <select class="form-select" id="newTaskStatusSelect" name="estado" required aria-describedby="error-estado">
+                  <option value="" selected disabled>Elige un estado</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="hecha">Hecha</option>
                 </select>
+                <div id="error-estado" class="invalid-feedback">Elige el estado de la tarea.</div>
               </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="newTaskCategorySelect" class="form-label">Categoría</label>
+              <select class="form-select" id="newTaskCategorySelect" name="categoria">
+                <option value="sprint-1">Sprint 1</option>
+                <option value="estudio">Estudio</option>
+                <option value="personal">Personal</option>
+              </select>
             </div>
 
             <fieldset class="mb-4">
@@ -217,6 +228,15 @@
                 <label class="btn btn-prioridad btn-prioridad-alta" for="prioridad-alta">Alta</label>
               </div>
             </fieldset>
+
+            <!-- Alertas de Bootstrap: ocultas al cargar, app.js las muestra según el resultado -->
+            <div id="newTaskErrorAlert" class="alert alert-danger alerta-form d-none" role="alert">
+              <p class="alerta-titulo">Revisa estos campos antes de agregar la tarea:</p>
+              <ul id="newTaskErrorList" class="alerta-lista"></ul>
+            </div>
+            <div id="newTaskSuccessAlert" class="alert alert-success alerta-form d-none" role="status">
+              Los datos están completos. Guardar la tarea en la lista llega en el Sprint 2.
+            </div>
 
             <button type="submit" class="btn btn-lampara w-100">
               <i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar tarea
@@ -288,7 +308,7 @@
 
             <li class="card tarea">
               <div class="card-body tarea-cuerpo">
-                <input class="form-check-input tarea-check" type="checkbox" id="tarea-3">
+                <input class="form-check-input tarea-check" type="checkbox" id="tarea-3" checked>
                 <div class="tarea-contenido">
                   <h3 class="card-title tarea-titulo"><label for="tarea-3">Crear la tarjeta de tarea</label></h3>
                   <p class="card-text tarea-desc">Card de Bootstrap con nombre, descripción, fecha de entrega y estado, más cinco ejemplos.</p>
@@ -297,7 +317,7 @@
                     <span class="prioridad prioridad-media">Media</span>
                     <span class="categoria">Sprint 1</span>
                   </div>
-                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="2026-11-03">3 nov 2026</time> <span class="entrega-relativa entrega-hoy">(vence hoy)</span></p>
+                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="2026-11-03">3 nov 2026</time></p>
                 </div>
                 <div class="tarea-acciones">
                   <button class="btn btn-icono" type="button" aria-label="Editar: Crear la tarjeta de tarea"><i class="bi bi-pencil" aria-hidden="true"></i></button>
@@ -311,13 +331,13 @@
                 <input class="form-check-input tarea-check" type="checkbox" id="tarea-4">
                 <div class="tarea-contenido">
                   <h3 class="card-title tarea-titulo"><label for="tarea-4">Validar el formulario</label></h3>
-                  <p class="card-text tarea-desc">Título obligatorio, fecha que no esté en el pasado y aviso de tareas repetidas.</p>
+                  <p class="card-text tarea-desc">Nombre, descripción, fecha de entrega y estado obligatorios, con alerta de Bootstrap.</p>
                   <div class="tarea-etiquetas">
                     <span class="badge rounded-pill estado"><span class="estado-pendiente">Pendiente</span><span class="estado-hecha">Hecha</span></span>
                     <span class="prioridad prioridad-media">Media</span>
                     <span class="categoria">Sprint 1</span>
                   </div>
-                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="2026-11-05">5 nov 2026</time> <span class="entrega-relativa">(en 2 días)</span></p>
+                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="2026-11-05">5 nov 2026</time> <span class="entrega-relativa entrega-hoy">(vence hoy)</span></p>
                 </div>
                 <div class="tarea-acciones">
                   <button class="btn btn-icono" type="button" aria-label="Editar: Validar el formulario"><i class="bi bi-pencil" aria-hidden="true"></i></button>
@@ -337,7 +357,7 @@
                     <span class="prioridad prioridad-baja">Baja</span>
                     <span class="categoria">Estudio</span>
                   </div>
-                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="2026-11-02">2 nov 2026</time> <span class="entrega-relativa entrega-atrasada">(venció ayer)</span></p>
+                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="2026-11-02">2 nov 2026</time> <span class="entrega-relativa entrega-atrasada">(venció hace 3 días)</span></p>
                 </div>
                 <div class="tarea-acciones">
                   <button class="btn btn-icono" type="button" aria-label="Editar: Repasar Box Model y Flexbox"><i class="bi bi-pencil" aria-hidden="true"></i></button>
