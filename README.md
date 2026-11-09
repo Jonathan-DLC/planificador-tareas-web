@@ -13,18 +13,19 @@ El diseño es un escritorio de noche frente a una ventana con lluvia. Las tareas
 | Tablero de Trello | [Planificador de Tareas](https://trello.com/b/EjGkYPzF/planificador-de-tareas) |
 | Diseño en Figma | [Planificador de tareas](https://www.figma.com/design/SLYZeWm8oUjhDzlQZXs8tU/Planificador-de-tareas?node-id=4-564) |
 
-## Funcionalidades (Sprint 1)
+## Funcionalidades
 
-JavaScript se usa solo para validar el formulario. El resto de lo interactivo (marcar tareas, filtros, conteo y el cambio de clima) se resuelve con CSS (`:has()` y contadores).
+JavaScript valida el formulario y marca las tareas como completadas. Los filtros, el conteo y el cambio de clima se resuelven con CSS (`:has()` y contadores) a partir de la clase que pone JavaScript.
 
 - **Formulario de nueva tarea**: nombre, descripción, fecha de entrega, estado, categoría y prioridad (baja, media o alta).
-- **Validación con JavaScript** (`js/app.js`): al enviar, la función `validFormFieldInput(data)` revisa que el nombre tenga al menos 3 caracteres, que la descripción no esté vacía, que haya una fecha de entrega y que se haya elegido un estado. Si falta algo, una alerta de Bootstrap lista lo que hay que corregir y los campos con error se marcan en rojo; si todo está bien, la alerta se oculta. Los datos leídos se muestran en la consola con `console.log()`.
-- **Tarjetas de tarea** con el componente Card de Bootstrap. Cada una muestra el nombre, la descripción, el estado (*Pendiente* o *Hecha*), la prioridad, la categoría y la fecha de entrega.
+- **Validación con JavaScript** (`js/index.js`): al enviar, la función `validFormFieldInput(data)` revisa que el nombre tenga al menos 3 caracteres, que la descripción no esté vacía, que haya una fecha de entrega y que se haya elegido un estado. Si falta algo, una alerta de Bootstrap lista lo que hay que corregir y los campos con error se marcan en rojo; si todo está bien, la alerta se oculta. Los datos leídos se muestran en la consola con `console.log()`.
+- **Tarjetas de tarea** con el componente Card de Bootstrap. Cada una muestra el nombre, la descripción, el estado (*Pendiente* o *Completada*), la prioridad, la categoría y la fecha de entrega.
 - **Cinco tareas de ejemplo** con información distinta.
-- **Marcar como hecha**: al marcar la casilla, el título se tacha y el estado cambia a *Hecha*.
-- **Filtros** *Todas*, *Pendientes* y *Hechas*, y un conteo de tareas hechas al final del cuaderno.
-- **Escampa**: si todas las tareas están hechas, para de llover y la ventana pasa al amanecer.
-- **Walkman**: controles de sonido de fondo (lluvia, lo-fi, tormenta, café y chimenea) y un temporizador de enfoque de 25 minutos. Por ahora son solo visuales; el sonido llega en el Sprint 2.
+- **Clase `TaskManager`** (`js/taskManager.js`): guarda las tareas en la propiedad `tasks`, que empieza como un array vacío. `js/index.js` crea la instancia y muestra `taskManager.tasks` en la consola.
+- **Completar tareas**: cada tarjeta tiene un botón que funciona como interruptor. Al tocarlo, JavaScript le agrega a la tarjeta la clase `completada`: el título se tacha con una línea que se dibuja de izquierda a derecha, el estado cambia a *Completada* y la tarjeta se atenúa. Al tocarlo otra vez vuelve a *Pendiente*, sin recargar la página.
+- **Filtros** *Todas*, *Pendientes* y *Completadas*, y un conteo de tareas completadas al final del cuaderno.
+- **Escampa**: si todas las tareas están completadas, para de llover y la ventana pasa al amanecer.
+- **Walkman**: controles de sonido de fondo (lluvia, lo-fi, tormenta, café y chimenea) y un temporizador de enfoque de 25 minutos. Por ahora son solo visuales; el sonido llega más adelante.
 - **Diseño adaptable**: en celular las columnas se apilan. Con *reducir movimiento* activado en el sistema, la lluvia queda quieta.
 
 ## Tecnologías
@@ -52,7 +53,10 @@ No necesita instalar nada: Bootstrap y las fuentes se cargan desde internet.
 - [x] **Tarea 1**: estructura de la interfaz con Bootstrap (encabezado, formulario y lista).
 - [x] **Tarea 2**: tarjeta de tarea con Card de Bootstrap, lista de tareas y cinco ejemplos.
 - [x] **Tarea 3**: validación de las entradas del formulario con JavaScript y alerta de Bootstrap.
-- [ ] **Sprint 2**: crear, completar y eliminar tareas con JavaScript, guardarlas en `localStorage` y hacer sonar el walkman.
+- [x] **Tarea 4**: clase `TaskManager` en `js/taskManager.js` y botón para marcar o desmarcar una tarea como completada.
+- [ ] **Tarea 5**: agregar tareas desde el formulario con JavaScript.
+- [ ] **Tarea 6**: eliminar una tarea.
+- [ ] **Después**: guardar las tareas en `localStorage` y hacer sonar el walkman.
 - [ ] **Backend**: API con Java y Spring Boot, base de datos SQL y conexión con el frontend.
 
 ## Autor
