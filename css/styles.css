@@ -4,8 +4,9 @@
    con lluvia. Las tareas se anotan en un cuaderno cuadriculado
    y, cuando no queda ninguna pendiente, escampa: la lluvia se
    detiene y la ventana muestra el amanecer.
-   En el Sprint 1 no hay JavaScript, así que el cambio de clima,
-   los filtros y el conteo se resuelven con :has() y contadores.
+   index.js marca cada tarjeta con la clase .completada; desde ahí,
+   el cambio de clima, los filtros y el conteo se resuelven con
+   :has() y contadores de CSS.
    ========================================================= */
 
 /* 1. VARIABLES: se cambian en un solo lugar */
@@ -252,36 +253,36 @@ p {
 }
 
 /* 5. ESCAMPA: si no queda ninguna casilla sin marcar, para de llover */
-:root:not(:has(.tarea-check:not(:checked))) .lluvia {
+:root:not(:has(.tarea:not(.completada))) .lluvia {
   opacity: 0;
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .cielo-amanecer {
+:root:not(:has(.tarea:not(.completada))) .cielo-amanecer {
   opacity: 1;
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .luna {
+:root:not(:has(.tarea:not(.completada))) .luna {
   opacity: 0;
   transform: translateY(-160%);
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .sol {
+:root:not(:has(.tarea:not(.completada))) .sol {
   transform: translateY(0);
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .edificio {
+:root:not(:has(.tarea:not(.completada))) .edificio {
   background-color: #3A2D4E;
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .escrito-lluvia {
+:root:not(:has(.tarea:not(.completada))) .escrito-lluvia {
   display: none;
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .escrito-escampo {
+:root:not(:has(.tarea:not(.completada))) .escrito-escampo {
   display: inline;
 }
 
-:root:not(:has(.tarea-check:not(:checked))) .vidrio-escrito {
+:root:not(:has(.tarea:not(.completada))) .vidrio-escrito {
   color: #FFF6EC;
 }
 
@@ -573,7 +574,7 @@ p {
     linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
   background-size: 24px 24px;
   box-shadow: 0 24px 48px -24px rgba(4, 7, 16, 0.8);
-  counter-reset: total hechas;
+  counter-reset: total completadas;
 }
 
 /* La línea roja del margen: el título y las tarjetas empiezan a su derecha */
@@ -651,10 +652,10 @@ p {
   counter-increment: total;
 }
 
-.tarea:has(.tarea-check:checked) {
+.tarea.completada {
   --bs-card-bg: rgba(251, 252, 254, 0.55);
   box-shadow: none;
-  counter-increment: total hechas;
+  counter-increment: total completadas;
 }
 
 .tarea-cuerpo.card-body {
@@ -665,24 +666,41 @@ p {
   padding: 1rem 0.5rem 1rem 1rem;
 }
 
-.tarea-check.form-check-input {
-  --bs-form-check-bg: #FBFCFE;
-  width: 1.5rem;
-  height: 1.5rem;
-  margin: 0.25rem 0 0;
-  border: 2px solid var(--tinta-suave);
-  border-radius: 0.3rem;
+/* Botón para completar: se dibuja como la casilla del cuaderno.
+   El área clickeable mide 44px aunque el cuadro se vea de 24px */
+.btn-completar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -0.375rem 0 0 -0.625rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
 }
 
-.tarea-check.form-check-input:checked {
-  background-color: var(--tinta);
-  border-color: var(--tinta);
+.btn-completar i {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--tinta-suave);
+  border-radius: 0.3rem;
+  font-size: 1rem;
+  color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tarea-check.form-check-input:focus {
+.btn-completar:hover i {
   border-color: var(--tinta);
-  box-shadow: 0 0 0 0.2rem rgba(245, 179, 87, 0.5);
+  color: rgba(31, 43, 71, 0.35);
+}
+
+.tarea.completada .btn-completar i {
+  border-color: var(--tinta);
+  background-color: var(--tinta);
+  color: var(--papel);
 }
 
 .tarea-contenido {
@@ -700,8 +718,14 @@ p {
   line-height: 1.45;
 }
 
-.tarea-titulo label {
-  cursor: pointer;
+/* El tachado es una línea de fondo que crece de 0 a 100%: al completar
+   la tarea se ve como si se tachara a mano, también en títulos de dos líneas */
+.tarea-titulo span {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 58%;
+  background-size: 0% 2px;
+  transition: background-size 0.35s ease;
 }
 
 .tarea-desc.card-text {
@@ -710,15 +734,17 @@ p {
   color: var(--tinta-suave);
 }
 
-/* Tarea hecha: tachada con la misma tinta, como en un cuaderno */
-.tarea:has(.tarea-check:checked) .tarea-titulo {
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
+/* Tarea completada: tachada con la misma tinta, como en un cuaderno */
+.tarea.completada .tarea-titulo {
   color: var(--tinta-suave);
 }
 
-.tarea:has(.tarea-check:checked) .tarea-desc,
-.tarea:has(.tarea-check:checked) .tarea-entrega {
+.tarea.completada .tarea-titulo span {
+  background-size: 100% 2px;
+}
+
+.tarea.completada .tarea-desc,
+.tarea.completada .tarea-entrega {
   opacity: 0.6;
 }
 
@@ -732,7 +758,7 @@ p {
   color: var(--tinta-suave);
 }
 
-/* Estado: la casilla decide qué texto se ve, así el badge siempre coincide con ella */
+/* Estado: la clase .completada (que pone index.js) decide qué texto se ve */
 .estado.badge {
   --bs-badge-color: #7A4A00;
   --bs-badge-font-size: 0.8125rem;
@@ -741,20 +767,20 @@ p {
   background-color: #FCEACB;
 }
 
-.estado-hecha {
+.estado-completada {
   display: none;
 }
 
-.tarea:has(.tarea-check:checked) .estado.badge {
+.tarea.completada .estado.badge {
   --bs-badge-color: #1F5A3A;
   background-color: #D8EEE1;
 }
 
-.tarea:has(.tarea-check:checked) .estado-pendiente {
+.tarea.completada .estado-pendiente {
   display: none;
 }
 
-.tarea:has(.tarea-check:checked) .estado-hecha {
+.tarea.completada .estado-completada {
   display: inline;
 }
 
@@ -825,8 +851,8 @@ p {
 
 /* Filtros sin JavaScript. Se ocultan con visibility (no con display:none)
    para que los contadores sigan contando las tareas escondidas */
-.cuaderno:has(#filtro-pendientes:checked) .tarea:has(.tarea-check:checked),
-.cuaderno:has(#filtro-hechas:checked) .tarea:not(:has(.tarea-check:checked)) {
+.cuaderno:has(#filtro-pendientes:checked) .tarea.completada,
+.cuaderno:has(#filtro-completadas:checked) .tarea:not(.completada) {
   visibility: hidden;
   position: absolute;
   height: 0;
@@ -843,8 +869,8 @@ p {
   color: var(--tinta-suave);
 }
 
-.cuaderno:has(#filtro-pendientes:checked):not(:has(.tarea-check:not(:checked))) .vacio-pendientes,
-.cuaderno:has(#filtro-hechas:checked):not(:has(.tarea-check:checked)) .vacio-hechas {
+.cuaderno:has(#filtro-pendientes:checked):not(:has(.tarea:not(.completada))) .vacio-pendientes,
+.cuaderno:has(#filtro-completadas:checked):not(:has(.tarea.completada)) .vacio-completadas {
   display: block;
 }
 
@@ -855,7 +881,7 @@ p {
 }
 
 .progreso::before {
-  content: counter(hechas) " de " counter(total) " tareas hechas";
+  content: counter(completadas) " de " counter(total) " tareas completadas";
 }
 
 /* 8. PIE */
@@ -931,7 +957,9 @@ p {
   .luna,
   .sol,
   .lluvia,
-  .edificio {
+  .edificio,
+  .tarea-titulo span,
+  .btn-completar i {
     transition: none;
   }
 }

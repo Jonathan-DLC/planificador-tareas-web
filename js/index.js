@@ -1,10 +1,42 @@
 /* =========================================================
-   ESCAMPA · Validación del formulario de nueva tarea
-   Sprint 1, Tarea 3: antes de procesar una tarea se revisa que
-   los campos obligatorios estén completos. Si falta algo, una
-   alerta de Bootstrap dice qué corregir; si todo está bien, la
-   alerta se oculta.
+   ESCAMPA · Lógica de la página
+   - Sprint 2, Tarea 4: instancia de TaskManager y botón para
+     marcar o desmarcar una tarea como completada.
+   - Sprint 1, Tarea 3: validación del formulario de nueva tarea
+     con una alerta de Bootstrap que dice qué corregir.
    ========================================================= */
+
+// TaskManager viene de taskManager.js, que se carga antes que este archivo
+const taskManager = new TaskManager();
+console.log(taskManager.tasks);
+
+// ---------------------------------------------------------
+// Completar tareas
+// ---------------------------------------------------------
+
+const listaTareas = document.querySelector('.tareas');
+
+function alternarCompletada(tarjeta) {
+  const completada = tarjeta.classList.toggle('completada');
+  const boton = tarjeta.querySelector('.btn-completar');
+  const titulo = tarjeta.querySelector('.tarea-titulo').textContent;
+
+  boton.setAttribute('aria-pressed', completada);
+  boton.setAttribute('aria-label', (completada ? 'Marcar como pendiente: ' : 'Marcar como completada: ') + titulo);
+}
+
+// Un solo listener en la lista sirve para todas las tarjetas,
+// también para las que se agreguen después con JavaScript
+listaTareas.addEventListener('click', (evento) => {
+  const boton = evento.target.closest('.btn-completar');
+  if (boton) {
+    alternarCompletada(boton.closest('.tarea'));
+  }
+});
+
+// ---------------------------------------------------------
+// Validación del formulario
+// ---------------------------------------------------------
 
 // Campos del formulario
 const newTaskForm = document.querySelector('#newTaskForm');
