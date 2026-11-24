@@ -12,7 +12,7 @@ class TaskManager {
   }
 
   // priority y category son opcionales: los usa la tarjeta del cuaderno
-  addTask(name, description, dueDate, status, priority = 'media', category = 'Sprint 1') {
+  addTask(name, description, dueDate, status, priority = 'media', category = 'sprint-1') {
     // El id sube antes de crear la tarea para que la primera sea la 1
     this.currentId++;
 

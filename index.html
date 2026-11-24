@@ -201,8 +201,8 @@
                 <label for="newTaskStatusSelect" class="form-label">Estado</label>
                 <select class="form-select" id="newTaskStatusSelect" name="estado" required aria-describedby="error-estado">
                   <option value="" selected disabled>Elige un estado</option>
-                  <option value="pendiente">Pendiente</option>
-                  <option value="completada">Completada</option>
+                  <option value="PORHACER">Por hacer</option>
+                  <option value="COMPLETADA">Completada</option>
                 </select>
                 <div id="error-estado" class="invalid-feedback">Elige el estado de la tarea.</div>
               </div>
@@ -237,7 +237,7 @@
               <ul id="newTaskErrorList" class="alerta-lista"></ul>
             </div>
             <div id="newTaskSuccessAlert" class="alert alert-success alerta-form d-none" role="status">
-              Los datos están completos. Guardar la tarea en la lista llega en el Sprint 2.
+              Tarea agregada.
             </div>
 
             <button type="submit" class="btn btn-lampara w-100">
@@ -277,7 +277,7 @@
                   <h3 class="card-title tarea-titulo"><span>Diseñar el wireframe en Figma</span></h3>
                   <p class="card-text tarea-desc">Encabezado, formulario, lista de tareas y botones principales.</p>
                   <div class="tarea-etiquetas">
-                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Pendiente</span><span class="estado-completada">Completada</span></span>
+                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
                     <span class="prioridad prioridad-alta">Alta</span>
                     <span class="categoria">Sprint 1</span>
                   </div>
@@ -299,7 +299,7 @@
                   <h3 class="card-title tarea-titulo"><span>Maquetar el layout con Bootstrap</span></h3>
                   <p class="card-text tarea-desc">Encabezado y dos columnas, formulario y lista, que se apilan en el celular.</p>
                   <div class="tarea-etiquetas">
-                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Pendiente</span><span class="estado-completada">Completada</span></span>
+                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
                     <span class="prioridad prioridad-alta">Alta</span>
                     <span class="categoria">Sprint 1</span>
                   </div>
@@ -321,7 +321,7 @@
                   <h3 class="card-title tarea-titulo"><span>Crear la tarjeta de tarea</span></h3>
                   <p class="card-text tarea-desc">Card de Bootstrap con nombre, descripción, fecha de entrega y estado, más cinco ejemplos.</p>
                   <div class="tarea-etiquetas">
-                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Pendiente</span><span class="estado-completada">Completada</span></span>
+                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
                     <span class="prioridad prioridad-media">Media</span>
                     <span class="categoria">Sprint 1</span>
                   </div>
@@ -343,7 +343,7 @@
                   <h3 class="card-title tarea-titulo"><span>Validar el formulario</span></h3>
                   <p class="card-text tarea-desc">Nombre, descripción, fecha de entrega y estado obligatorios, con alerta de Bootstrap.</p>
                   <div class="tarea-etiquetas">
-                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Pendiente</span><span class="estado-completada">Completada</span></span>
+                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
                     <span class="prioridad prioridad-media">Media</span>
                     <span class="categoria">Sprint 1</span>
                   </div>
@@ -365,7 +365,7 @@
                   <h3 class="card-title tarea-titulo"><span>Repasar Box Model y Flexbox</span></h3>
                   <p class="card-text tarea-desc">Volver al laboratorio práctico antes de seguir maquetando.</p>
                   <div class="tarea-etiquetas">
-                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Pendiente</span><span class="estado-completada">Completada</span></span>
+                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
                     <span class="prioridad prioridad-baja">Baja</span>
                     <span class="categoria">Estudio</span>
                   </div>
@@ -378,6 +378,32 @@
               </div>
             </li>
           </ul>
+
+          <!-- Plantilla de tarjeta: index.js la copia por cada tarea nueva y rellena sus datos.
+               El navegador no muestra el contenido de un <template> hasta que se copia -->
+          <template id="plantillaTarea">
+            <li class="card tarea">
+              <div class="card-body tarea-cuerpo">
+                <button class="btn-completar" type="button" aria-pressed="false">
+                  <i class="bi bi-check-lg" aria-hidden="true"></i>
+                </button>
+                <div class="tarea-contenido">
+                  <h3 class="card-title tarea-titulo"><span></span></h3>
+                  <p class="card-text tarea-desc"></p>
+                  <div class="tarea-etiquetas">
+                    <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
+                    <span class="prioridad"></span>
+                    <span class="categoria"></span>
+                  </div>
+                  <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time></time> <span class="entrega-relativa"></span></p>
+                </div>
+                <div class="tarea-acciones">
+                  <button class="btn btn-icono btn-editar" type="button"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                  <button class="btn btn-icono btn-eliminar" type="button"><i class="bi bi-trash3" aria-hidden="true"></i></button>
+                </div>
+              </div>
+            </li>
+          </template>
 
           <p class="vacio vacio-pendientes">No te queda nada pendiente. Agrega una tarea nueva cuando quieras.</p>
           <p class="vacio vacio-completadas">Todavía no has completado ninguna. Toca el botón de una tarea al terminarla.</p>
