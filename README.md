@@ -15,14 +15,15 @@ El diseño es un escritorio de noche frente a una ventana con lluvia. Las tareas
 
 ## Funcionalidades
 
-JavaScript valida el formulario y marca las tareas como completadas. Los filtros, el conteo y el cambio de clima se resuelven con CSS (`:has()` y contadores) a partir de la clase que pone JavaScript.
+JavaScript valida el formulario, registra las tareas nuevas y las marca como completadas. Los filtros, el conteo y el cambio de clima se resuelven con CSS (`:has()` y contadores) a partir de la clase que pone JavaScript.
 
 - **Formulario de nueva tarea**: nombre, descripción, fecha de entrega, estado, categoría y prioridad (baja, media o alta).
 - **Validación con JavaScript** (`js/index.js`): al enviar, la función `validFormFieldInput(data)` revisa que el nombre tenga al menos 3 caracteres, que la descripción no esté vacía, que haya una fecha de entrega y que se haya elegido un estado. Si falta algo, una alerta de Bootstrap lista lo que hay que corregir y los campos con error se marcan en rojo; si todo está bien, la alerta se oculta. Los datos leídos se muestran en la consola con `console.log()`.
-- **Tarjetas de tarea** con el componente Card de Bootstrap. Cada una muestra el nombre, la descripción, el estado (*Pendiente* o *Completada*), la prioridad, la categoría y la fecha de entrega.
+- **Tarjetas de tarea** con el componente Card de Bootstrap. Cada una muestra el nombre, la descripción, el estado (*Por hacer* o *Completada*), la prioridad, la categoría y la fecha de entrega.
 - **Cinco tareas de ejemplo** con información distinta.
-- **Clase `TaskManager`** (`js/taskManager.js`): guarda las tareas en la propiedad `tasks`, que empieza como un array vacío. `js/index.js` crea la instancia y muestra `taskManager.tasks` en la consola.
-- **Completar tareas**: cada tarjeta tiene un botón que funciona como interruptor. Al tocarlo, JavaScript le agrega a la tarjeta la clase `completada`: el título se tacha con una línea que se dibuja de izquierda a derecha, el estado cambia a *Completada* y la tarjeta se atenúa. Al tocarlo otra vez vuelve a *Pendiente*, sin recargar la página.
+- **Clase `TaskManager`** (`js/taskManager.js`): guarda las tareas en la propiedad `tasks`, que empieza como un array vacío, y lleva un contador `currentId`. Su método `addTask(name, description, dueDate, status)` sube el contador y agrega con `push()` un objeto con `id` consecutivo y estado inicial `PORHACER`. Acepta además la prioridad y la categoría, que usa la tarjeta.
+- **Agregar tareas**: al enviar el formulario con datos válidos, `js/index.js` llama a `taskManager.addTask()`, muestra la tarea nueva al principio del cuaderno (a partir de un `<template>` con el mismo diseño de las tarjetas), confirma con una alerta verde y deja el formulario limpio. Si los datos no son válidos, no se registra nada. La lista actualizada se puede ver en la consola con `taskManager.tasks`.
+- **Completar tareas**: cada tarjeta tiene un botón que funciona como interruptor. Al tocarlo, JavaScript le agrega a la tarjeta la clase `completada`: el título se tacha con una línea que se dibuja de izquierda a derecha, el estado cambia a *Completada* y la tarjeta se atenúa. Al tocarlo otra vez vuelve a *Por hacer*, sin recargar la página.
 - **Filtros** *Todas*, *Pendientes* y *Completadas*, y un conteo de tareas completadas al final del cuaderno.
 - **Escampa**: si todas las tareas están completadas, para de llover y la ventana pasa al amanecer.
 - **Walkman**: controles de sonido de fondo (lluvia, lo-fi, tormenta, café y chimenea) y un temporizador de enfoque de 25 minutos. Por ahora son solo visuales; el sonido llega más adelante.
@@ -54,7 +55,7 @@ No necesita instalar nada: Bootstrap y las fuentes se cargan desde internet.
 - [x] **Tarea 2**: tarjeta de tarea con Card de Bootstrap, lista de tareas y cinco ejemplos.
 - [x] **Tarea 3**: validación de las entradas del formulario con JavaScript y alerta de Bootstrap.
 - [x] **Tarea 4**: clase `TaskManager` en `js/taskManager.js` y botón para marcar o desmarcar una tarea como completada.
-- [ ] **Tarea 5**: agregar tareas desde el formulario con JavaScript.
+- [x] **Tarea 5**: método `addTask()` con `currentId` y formulario conectado para registrar y mostrar tareas nuevas.
 - [ ] **Tarea 6**: eliminar una tarea.
 - [ ] **Después**: guardar las tareas en `localStorage` y hacer sonar el walkman.
 - [ ] **Backend**: API con Java y Spring Boot, base de datos SQL y conexión con el frontend.
