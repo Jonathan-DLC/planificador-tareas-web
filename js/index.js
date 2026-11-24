@@ -8,6 +8,20 @@
 
 // TaskManager viene de taskManager.js, que se carga antes que este archivo
 const taskManager = new TaskManager();
+
+// Prueba de addTask() antes de conectarlo al formulario (Tarea 5, Paso 1)
+taskManager.addTask(
+  'Sacar la basura',
+  'Sacar la basura al frente de la casa',
+  '2020-09-20',
+  'PORHACER'
+);
+taskManager.addTask(
+  'Hacer de cenar',
+  'Preparar la cena para la familia',
+  '2020-09-20',
+  'PORHACER'
+);
 console.log(taskManager.tasks);
 
 // ---------------------------------------------------------
