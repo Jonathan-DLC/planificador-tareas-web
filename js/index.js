@@ -46,7 +46,7 @@ const filtroCompletadas = document.querySelector('#filtro-completadas');
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const TEXTO_PRIORIDAD = { baja: 'Baja', media: 'Media', alta: 'Alta' };
-const TEXTO_CATEGORIA = { 'sprint-1': 'Sprint 1', estudio: 'Estudio', personal: 'Personal' };
+const TEXTO_CATEGORIA = { trabajo: 'Trabajo', estudio: 'Estudio', personal: 'Personal' };
 
 // El input date entrega "2026-11-30"; se arma la fecha local para que no se corra un día por la zona horaria
 function leerFecha(textoFecha) {

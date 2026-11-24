@@ -364,6 +364,52 @@ p {
   gap: 0.5rem 1.25rem;
 }
 
+/* Canción lo-fi que suena y botón para pasar a la siguiente.
+   El canal lo-fi ocupa dos columnas para que se lea el nombre de la canción */
+.canal:has(.canal-cancion) {
+  grid-column: span 2;
+}
+
+.canal-cancion {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: -0.25rem;
+}
+
+.cancion-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.btn-siguiente {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.btn-siguiente:hover {
+  background: rgba(231, 236, 245, 0.12);
+}
+
+/* walkman.js marca así un canal cuyo mp3 no se encontró en audio/ */
+.canal-sin-audio {
+  opacity: 0.45;
+}
+
 .canal-nombre {
   display: flex;
   align-items: center;
