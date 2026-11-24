@@ -12,6 +12,10 @@
 const taskManager = new TaskManager();
 console.log(taskManager.tasks);
 
+// Fecha de hoy en el encabezado, por ejemplo "Martes, 24 de noviembre"
+const fechaHoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+document.querySelector('.barra-fecha').textContent = fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1);
+
 // ---------------------------------------------------------
 // Completar tareas
 // ---------------------------------------------------------
