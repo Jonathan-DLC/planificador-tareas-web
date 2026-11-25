@@ -15,23 +15,38 @@ El diseño es un escritorio de noche frente a una ventana con lluvia. Las tareas
 
 ## Funcionalidades
 
-JavaScript valida el formulario, registra las tareas nuevas y las marca como completadas. Los filtros, el conteo y el cambio de clima se resuelven con CSS (`:has()` y contadores) a partir de la clase que pone JavaScript.
+JavaScript valida el formulario, crea, completa y elimina tareas, y las guarda en `localStorage`. Los filtros, el conteo y el cambio de clima se resuelven con CSS (`:has()` y contadores) a partir de las clases que pone JavaScript.
 
-- **Formulario de nueva tarea**: nombre, descripción, fecha de entrega, estado, categoría y prioridad (baja, media o alta).
-- **Validación con JavaScript** (`js/index.js`): al enviar, la función `validFormFieldInput(data)` revisa que el nombre tenga al menos 3 caracteres, que la descripción no esté vacía, que haya una fecha de entrega y que se haya elegido un estado. Si falta algo, una alerta de Bootstrap lista lo que hay que corregir y los campos con error se marcan en rojo; si todo está bien, la alerta se oculta. Los datos leídos se muestran en la consola con `console.log()`.
-- **Tarjetas de tarea** con el componente Card de Bootstrap. Cada una muestra el nombre, la descripción, el estado (*Por hacer* o *Completada*), la prioridad, la categoría y la fecha de entrega.
-- **Cinco tareas de ejemplo** con información distinta.
-- **Clase `TaskManager`** (`js/taskManager.js`): guarda las tareas en la propiedad `tasks`, que empieza como un array vacío, y lleva un contador `currentId`. Su método `addTask(name, description, dueDate, status)` sube el contador y agrega con `push()` un objeto con `id` consecutivo y estado inicial `PORHACER`. Acepta además la prioridad y la categoría, que usa la tarjeta.
-- **Agregar tareas**: al enviar el formulario con datos válidos, `js/index.js` llama a `taskManager.addTask()`, muestra la tarea nueva al principio del cuaderno (a partir de un `<template>` con el mismo diseño de las tarjetas), confirma con una alerta verde y deja el formulario limpio. Si los datos no son válidos, no se registra nada. La lista actualizada se puede ver en la consola con `taskManager.tasks`.
-- **Completar tareas**: cada tarjeta tiene un botón que funciona como interruptor. Al tocarlo, JavaScript le agrega a la tarjeta la clase `completada`: el título se tacha con una línea que se dibuja de izquierda a derecha, el estado cambia a *Completada* y la tarjeta se atenúa. Al tocarlo otra vez vuelve a *Por hacer*, sin recargar la página.
-- **Filtros** *Todas*, *Pendientes* y *Completadas*, y un conteo de tareas completadas al final del cuaderno.
-- **Escampa**: si todas las tareas están completadas, para de llover y la ventana pasa al amanecer.
-- **Walkman**: controles de sonido de fondo (lluvia, lo-fi, tormenta, café y chimenea) y un temporizador de enfoque de 25 minutos. Por ahora son solo visuales; el sonido llega más adelante.
+### Tareas
+
+- **Formulario de nueva tarea**: nombre, descripción, fecha de entrega, estado, categoría (trabajo, estudio o personal) y prioridad (baja, media o alta).
+- **Validación con JavaScript** (`js/index.js`): al enviar, la función `validFormFieldInput(data)` revisa que el nombre tenga al menos 3 caracteres, que la descripción no esté vacía, que haya una fecha de entrega y que se haya elegido un estado. Si falta algo, una alerta de Bootstrap lista lo que hay que corregir y los campos con error se marcan en rojo; si todo está bien, la alerta se oculta.
+- **Clase `TaskManager`** (`js/taskManager.js`): guarda las tareas en `tasks` y lleva un contador `currentId`.
+  - `addTask(name, description, dueDate, status)` sube el contador y agrega con `push()` una tarea con `id` consecutivo y estado inicial `PORHACER`. Acepta además la prioridad y la categoría.
+  - `deleteTask(taskId)` arma un array `newTasks` con todas las tareas menos la del id recibido y lo asigna a `tasks`.
+  - `toggleTaskStatus(taskId)` cambia una tarea entre `PORHACER` y `COMPLETADA`.
+  - `save()` y `load()` guardan y recuperan las tareas y el contador en `localStorage`.
+  - `render()` dibuja la lista con `createTaskHtml(task)`, que arma el HTML de cada tarjeta con su `data-task-id`.
+- **Tarjetas de tarea** con el componente Card de Bootstrap: nombre, descripción, estado (*Por hacer* o *Completada*), prioridad, categoría, fecha de entrega y cuántos días faltan o pasaron.
+- **Agregar tareas**: con datos válidos, el formulario llama a `addTask()`, guarda, vuelve a dibujar la lista con la tarea nueva arriba, confirma con una alerta verde y queda limpio.
+- **Completar tareas**: el botón de cada tarjeta funciona como interruptor. El título se tacha con una línea que se dibuja de izquierda a derecha, el estado cambia a *Completada* y queda guardado.
+- **Eliminar tareas**: cada tarjeta tiene un botón **Eliminar** (`delete-button`). Al tocarlo se lee el `data-task-id` de la tarjeta, se pasa a número y se llama a `deleteTask()`, `save()` y `render()`. La tarea eliminada no vuelve al recargar.
+- **Tareas guardadas**: todo se conserva en `localStorage`. En la primera visita aparecen cinco tareas de ejemplo; si se borran, no vuelven.
+- **Filtros** *Todas*, *Pendientes* y *Completadas*, un conteo de tareas completadas y un mensaje cuando la lista queda vacía.
+
+### Ambiente
+
+- **Escampa**: mientras haya tareas pendientes llueve; cuando no queda ninguna, para de llover y la ventana pasa al amanecer.
+- **Walkman** (`js/walkman.js`):
+  - Sonidos de fondo de lluvia, tormenta, café y chimenea, y una lista de 6 canciones lo-fi con botón para pasar a la siguiente. Todos empiezan apagados; cada deslizador enciende su sonido y ajusta el volumen.
+  - Temporizador pomodoro de 25 minutos de enfoque y 5 de descanso, con una campanita al cambiar.
+- **Fecha de hoy** en el encabezado.
 - **Diseño adaptable**: en celular las columnas se apilan. Con *reducir movimiento* activado en el sistema, la lluvia queda quieta.
 
 ## Tecnologías
 
 - HTML5, CSS3 y JavaScript
+- `localStorage` para guardar las tareas
 - [Bootstrap 5.3](https://getbootstrap.com/) y [Bootstrap Icons](https://icons.getbootstrap.com/) por CDN
 - Fuentes de Google Fonts: Atkinson Hyperlegible Next y Shantell Sans
 - Git y GitHub, publicado en [GitHub Pages](https://pages.github.com/) y [Vercel](https://vercel.com/)
@@ -46,7 +61,7 @@ No necesita instalar nada: Bootstrap y las fuentes se cargan desde internet.
    git clone https://github.com/Jonathan-DLC/planificador-tareas-web.git
    ```
 
-2. Abre `index.html` en el navegador, o con la extensión **Live Server** de VS Code (clic derecho → *Open with Live Server*).
+2. Abre `index.html` con la extensión **Live Server** de VS Code (clic derecho → *Open with Live Server*). También funciona abriendo el archivo directo en el navegador, aunque algunos navegadores bloquean el audio en archivos locales.
 
 ## Avance por sprints
 
@@ -56,9 +71,25 @@ No necesita instalar nada: Bootstrap y las fuentes se cargan desde internet.
 - [x] **Tarea 3**: validación de las entradas del formulario con JavaScript y alerta de Bootstrap.
 - [x] **Tarea 4**: clase `TaskManager` en `js/taskManager.js` y botón para marcar o desmarcar una tarea como completada.
 - [x] **Tarea 5**: método `addTask()` con `currentId` y formulario conectado para registrar y mostrar tareas nuevas.
-- [ ] **Tarea 6**: eliminar una tarea.
-- [ ] **Después**: guardar las tareas en `localStorage` y hacer sonar el walkman.
+- [x] **Tarea 6**: botón Eliminar con `deleteTask()`, y tareas guardadas en `localStorage` con `save()` y dibujadas con `render()`.
 - [ ] **Backend**: API con Java y Spring Boot, base de datos SQL y conexión con el frontend.
+
+## Créditos de los sonidos
+
+Todos los sonidos son de [Pixabay](https://pixabay.com/) y se usan bajo su licencia de contenido.
+
+| Archivo | Sonido | Autor |
+|---|---|---|
+| `audio/lluvia.mp3` | [Calming Rain Loop](https://pixabay.com/sound-effects/nature-calming-rain-loop-398653/) | DRAGON-STUDIO |
+| `audio/tormenta.mp3` | [Thunderstorm with Rain](https://pixabay.com/sound-effects/film-special-effects-thunderstorm-with-rain-516367/) | loswin23 |
+| `audio/cafe.mp3` | [Ambience Coffee Shop 5](https://pixabay.com/sound-effects/city-ambience-coffee-shop-5-17059/) | freesound_community |
+| `audio/chimenea.mp3` | [Fireplace Fire Crackling - Loop](https://pixabay.com/sound-effects/nature-fireplace-fire-crackling-loop-123930/) | SoundsForYou |
+| `audio/lofi-1.mp3` | [Chill — Lamp Light](https://pixabay.com/music/lofi-chill-lamp-light-553405/) | Ornave |
+| `audio/lofi-2.mp3` | [Lofi Study Rainy Night](https://pixabay.com/music/lofi-lofi-study-rainy-night-568166/) | alex-morgan |
+| `audio/lofi-3.mp3` | [Chillhop Jazz Coffee Shop](https://pixabay.com/music/lofi-chillhop-jazz-coffee-shop-552792/) | alex-morgan |
+| `audio/lofi-4.mp3` | [Lofi — Moon Light](https://pixabay.com/music/lofi-lofi-moon-light-553399/) | Ornave |
+| `audio/lofi-5.mp3` | [Good Night - Lofi Cozy Chill Music](https://pixabay.com/music/beats-good-night-lofi-cozy-chill-music-160166/) | FASSounds |
+| `audio/lofi-6.mp3` | [Ink & Rain (Zen Lofi)](https://pixabay.com/music/lofi-ink-amp-rain-zen-lofi-469329/) | Turning_Pages |
 
 ## Autor
 
