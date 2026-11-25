@@ -1,5 +1,7 @@
 /* =========================================================
    ESCAMPA · Lógica de la página
+   - Sprint 2, Tarea 6: eliminar tareas y guardarlas en
+     localStorage para que sigan ahí al recargar.
    - Sprint 2, Tarea 5: el formulario registra tareas con
      taskManager.addTask() y las muestra en el cuaderno.
    - Sprint 2, Tarea 4: instancia de TaskManager y botón para
@@ -10,18 +12,54 @@
 
 // TaskManager viene de taskManager.js, que se carga antes que este archivo
 const taskManager = new TaskManager();
-console.log(taskManager.tasks);
 
 // Fecha de hoy en el encabezado, por ejemplo "Martes, 24 de noviembre"
 const fechaHoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 document.querySelector('.barra-fecha').textContent = fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1);
 
 // ---------------------------------------------------------
-// Completar tareas
+// Cargar las tareas guardadas
 // ---------------------------------------------------------
 
-const listaTareas = document.querySelector('.tareas');
+// Fecha en formato "2026-11-30" a una cantidad de días de hoy
+function fechaDentroDe(dias) {
+  const fecha = new Date();
+  fecha.setDate(fecha.getDate() + dias);
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
 
+// La primera visita no tiene nada guardado: se cargan cinco tareas de ejemplo.
+// Si el usuario las borra, se guardan borradas y no vuelven a aparecer
+function cargarTareasDeEjemplo() {
+  taskManager.addTask('Diseñar el wireframe en Figma', 'Encabezado, formulario, lista de tareas y botones principales.', '2026-11-02', 'PORHACER', 'alta', 'trabajo');
+  taskManager.addTask('Maquetar el layout con Bootstrap', 'Encabezado y dos columnas, formulario y lista, que se apilan en el celular.', '2026-11-03', 'PORHACER', 'alta', 'trabajo');
+  taskManager.addTask('Crear la tarjeta de tarea', 'Card de Bootstrap con nombre, descripción, fecha de entrega y estado.', '2026-11-03', 'PORHACER', 'media', 'trabajo');
+  taskManager.addTask('Validar el formulario', 'Nombre, descripción, fecha de entrega y estado obligatorios, con alerta de Bootstrap.', fechaDentroDe(2), 'PORHACER', 'media', 'trabajo');
+  taskManager.addTask('Repasar Box Model y Flexbox', 'Volver al laboratorio práctico antes de seguir maquetando.', fechaDentroDe(-1), 'PORHACER', 'baja', 'estudio');
+
+  // Las tres primeras ya están hechas
+  [1, 2, 3].forEach((id) => taskManager.toggleTaskStatus(id));
+  taskManager.save();
+}
+
+if (!taskManager.load()) {
+  cargarTareasDeEjemplo();
+}
+taskManager.render();
+console.log(taskManager.tasks);
+
+// ---------------------------------------------------------
+// Completar y eliminar tareas
+// ---------------------------------------------------------
+
+const listaTareas = document.querySelector('#tasksList');
+const filtroTodas = document.querySelector('#filtro-todas');
+const filtroCompletadas = document.querySelector('#filtro-completadas');
+
+// Se cambia la clase en la tarjeta que ya existe (sin volver a dibujar la lista)
+// para que se vea la animación del tachado
 function alternarCompletada(tarjeta) {
   const completada = tarjeta.classList.toggle('completada');
   const boton = tarjeta.querySelector('.btn-completar');
@@ -32,78 +70,31 @@ function alternarCompletada(tarjeta) {
 }
 
 // Un solo listener en la lista sirve para todas las tarjetas,
-// también para las que se agreguen después con JavaScript
-listaTareas.addEventListener('click', (evento) => {
-  const boton = evento.target.closest('.btn-completar');
-  if (boton) {
-    alternarCompletada(boton.closest('.tarea'));
+// también para las que se dibujan después con render()
+listaTareas.addEventListener('click', (event) => {
+  // closest() encuentra el botón aunque el clic caiga sobre su ícono
+  const botonCompletar = event.target.closest('.btn-completar');
+  const botonEliminar = event.target.closest('.delete-button');
+
+  if (botonCompletar) {
+    const tarjeta = botonCompletar.closest('[data-task-id]');
+    taskManager.toggleTaskStatus(Number(tarjeta.dataset.taskId));
+    taskManager.save();
+    alternarCompletada(tarjeta);
+  }
+
+  if (botonEliminar) {
+    // La tarjeta (el elemento con data-task-id) está varios niveles arriba del botón
+    const parentTask = botonEliminar.closest('[data-task-id]');
+    // dataset entrega el id como texto: se pasa a número para compararlo con task.id
+    const taskId = Number(parentTask.dataset.taskId);
+
+    taskManager.deleteTask(taskId);
+    taskManager.save();
+    taskManager.render();
+    console.log('Tarea eliminada:', taskId, taskManager.tasks);
   }
 });
-
-// ---------------------------------------------------------
-// Mostrar una tarea nueva en el cuaderno
-// ---------------------------------------------------------
-
-const plantillaTarea = document.querySelector('#plantillaTarea');
-const filtroTodas = document.querySelector('#filtro-todas');
-const filtroCompletadas = document.querySelector('#filtro-completadas');
-
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-const TEXTO_PRIORIDAD = { baja: 'Baja', media: 'Media', alta: 'Alta' };
-const TEXTO_CATEGORIA = { trabajo: 'Trabajo', estudio: 'Estudio', personal: 'Personal' };
-
-// El input date entrega "2026-11-30"; se arma la fecha local para que no se corra un día por la zona horaria
-function leerFecha(textoFecha) {
-  const [anio, mes, dia] = textoFecha.split('-').map(Number);
-  return new Date(anio, mes - 1, dia);
-}
-
-function textoRelativo(fecha) {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const dias = Math.round((fecha - hoy) / 86400000);
-
-  if (dias === 0) return { texto: '(vence hoy)', clase: 'entrega-hoy' };
-  if (dias === 1) return { texto: '(mañana)', clase: '' };
-  if (dias > 1) return { texto: `(en ${dias} días)`, clase: '' };
-  if (dias === -1) return { texto: '(venció ayer)', clase: 'entrega-atrasada' };
-  return { texto: `(venció hace ${-dias} días)`, clase: 'entrega-atrasada' };
-}
-
-function crearTarjeta(tarea) {
-  const tarjeta = plantillaTarea.content.firstElementChild.cloneNode(true);
-  const fecha = leerFecha(tarea.dueDate);
-  const relativo = textoRelativo(fecha);
-
-  tarjeta.dataset.id = tarea.id;
-  tarjeta.querySelector('.tarea-titulo span').textContent = tarea.name;
-  tarjeta.querySelector('.tarea-desc').textContent = tarea.description;
-
-  const prioridad = tarjeta.querySelector('.prioridad');
-  prioridad.classList.add(`prioridad-${tarea.priority}`);
-  prioridad.textContent = TEXTO_PRIORIDAD[tarea.priority];
-  tarjeta.querySelector('.categoria').textContent = TEXTO_CATEGORIA[tarea.category];
-
-  const tiempo = tarjeta.querySelector('time');
-  tiempo.dateTime = tarea.dueDate;
-  tiempo.textContent = `${fecha.getDate()} ${MESES[fecha.getMonth()]} ${fecha.getFullYear()}`;
-
-  const entregaRelativa = tarjeta.querySelector('.entrega-relativa');
-  entregaRelativa.textContent = relativo.texto;
-  if (relativo.clase) entregaRelativa.classList.add(relativo.clase);
-
-  tarjeta.querySelector('.btn-completar').setAttribute('aria-label', `Marcar como completada: ${tarea.name}`);
-  tarjeta.querySelector('.btn-editar').setAttribute('aria-label', `Editar: ${tarea.name}`);
-  tarjeta.querySelector('.btn-eliminar').setAttribute('aria-label', `Eliminar: ${tarea.name}`);
-
-  return tarjeta;
-}
-
-function mostrarTarea(tarea) {
-  // Si está activo el filtro "Completadas", la tarea nueva (por hacer) quedaría oculta
-  if (filtroCompletadas.checked) filtroTodas.checked = true;
-  listaTareas.prepend(crearTarjeta(tarea));
-}
 
 // ---------------------------------------------------------
 // Validación del formulario
@@ -226,7 +217,11 @@ newTaskForm.addEventListener('submit', (evento) => {
       data.categoria
     );
     const tareaNueva = taskManager.tasks[taskManager.tasks.length - 1];
-    mostrarTarea(tareaNueva);
+    taskManager.save();
+
+    // Si está activo el filtro "Completadas", la tarea nueva (por hacer) quedaría oculta
+    if (filtroCompletadas.checked) filtroTodas.checked = true;
+    taskManager.render();
     console.log('Tarea agregada:', tareaNueva);
     console.log(taskManager.tasks);
 

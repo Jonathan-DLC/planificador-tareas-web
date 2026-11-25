@@ -895,6 +895,23 @@ p {
   background: rgba(31, 43, 71, 0.08);
 }
 
+/* Botón Eliminar: discreto en reposo, se tiñe del rojo de "atrasada" al pasar encima */
+.btn-eliminar {
+  --bs-btn-color: var(--tinta-suave);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #A8344F;
+  --bs-btn-hover-bg: rgba(168, 52, 79, 0.08);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #A8344F;
+  --bs-btn-active-bg: rgba(168, 52, 79, 0.14);
+  --bs-btn-active-border-color: transparent;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
 /* Filtros sin JavaScript. Se ocultan con visibility (no con display:none)
    para que los contadores sigan contando las tareas escondidas */
 .cuaderno:has(#filtro-pendientes:checked) .tarea.completada,
@@ -915,6 +932,7 @@ p {
   color: var(--tinta-suave);
 }
 
+.cuaderno:has(#filtro-todas:checked):not(:has(.tarea)) .vacio-todas,
 .cuaderno:has(#filtro-pendientes:checked):not(:has(.tarea:not(.completada))) .vacio-pendientes,
 .cuaderno:has(#filtro-completadas:checked):not(:has(.tarea.completada)) .vacio-completadas {
   display: block;
