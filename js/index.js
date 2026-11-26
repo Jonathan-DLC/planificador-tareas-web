@@ -40,7 +40,9 @@ function cargarTareasDeEjemplo() {
   taskManager.addTask('Repasar Box Model y Flexbox', 'Volver al laboratorio práctico antes de seguir maquetando.', fechaDentroDe(-1), 'PORHACER', 'baja', 'estudio');
 
   // Las tres primeras ya están hechas
-  [1, 2, 3].forEach((id) => taskManager.toggleTaskStatus(id));
+  [1, 2, 3].forEach((id) => {
+    taskManager.getTaskById(id).status = 'DONE';
+  });
   taskManager.save();
 }
 
@@ -58,29 +60,38 @@ const listaTareas = document.querySelector('#tasksList');
 const filtroTodas = document.querySelector('#filtro-todas');
 const filtroCompletadas = document.querySelector('#filtro-completadas');
 
-// Se cambia la clase en la tarjeta que ya existe (sin volver a dibujar la lista)
-// para que se vea la animación del tachado
-function alternarCompletada(tarjeta) {
-  const completada = tarjeta.classList.toggle('completada');
-  const boton = tarjeta.querySelector('.btn-completar');
-  const titulo = tarjeta.querySelector('.tarea-titulo').textContent;
+// render() dibuja la tarjeta ya en su estado final, y así no se vería el tachado.
+// Se le pone un instante el estado anterior y se vuelve al nuevo para que la transición se anime
+function animarCambioDeEstado(taskId, hecha) {
+  const tarjeta = listaTareas.querySelector(`[data-task-id="${taskId}"]`);
+  tarjeta.classList.toggle('completada', !hecha);
+  void tarjeta.offsetWidth; // obliga al navegador a aplicar el estado anterior antes del cambio
+  tarjeta.classList.toggle('completada', hecha);
 
-  boton.setAttribute('aria-pressed', completada);
-  boton.setAttribute('aria-label', (completada ? 'Marcar como pendiente: ' : 'Marcar como completada: ') + titulo);
+  // render() reemplazó el botón: se le devuelve el foco a quien usa el teclado
+  tarjeta.querySelector('.done-button').focus();
 }
 
 // Un solo listener en la lista sirve para todas las tarjetas,
 // también para las que se dibujan después con render()
 listaTareas.addEventListener('click', (event) => {
   // closest() encuentra el botón aunque el clic caiga sobre su ícono
-  const botonCompletar = event.target.closest('.btn-completar');
+  const botonHecha = event.target.closest('.done-button');
   const botonEliminar = event.target.closest('.delete-button');
 
-  if (botonCompletar) {
-    const tarjeta = botonCompletar.closest('[data-task-id]');
-    taskManager.toggleTaskStatus(Number(tarjeta.dataset.taskId));
+  if (botonHecha) {
+    // La tarjeta (el elemento con data-task-id) está varios niveles arriba del botón
+    const parentTask = botonHecha.closest('[data-task-id]');
+    // dataset entrega el id como texto: se pasa a número para compararlo con task.id
+    const taskId = Number(parentTask.dataset.taskId);
+    const task = taskManager.getTaskById(taskId);
+
+    // Funciona como interruptor: marca la tarea como DONE o la devuelve a PORHACER
+    task.status = task.status === 'DONE' ? 'PORHACER' : 'DONE';
     taskManager.save();
-    alternarCompletada(tarjeta);
+    taskManager.render();
+    animarCambioDeEstado(taskId, task.status === 'DONE');
+    console.log('Tarea actualizada:', task);
   }
 
   if (botonEliminar) {
