@@ -5,6 +5,8 @@
    - Sprint 2, Tarea 5: contador currentId y método addTask().
    - Sprint 2, Tarea 6: deleteTask(), save() y load() con
      localStorage, y render() para dibujar las tarjetas.
+   - Sprint 3, Tarea 7: getTaskById() para actualizar el estado
+     de una tarea a DONE.
    ========================================================= */
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -41,32 +43,33 @@ function textoRelativo(fecha) {
 }
 
 // Devuelve el HTML de la tarjeta de una tarea. data-task-id guarda su id
-// para que el botón Eliminar sepa cuál tarea borrar
-function createTaskHtml(task) {
-  const completada = task.status === 'COMPLETADA';
-  const nombre = escaparHtml(task.name);
-  const fecha = leerFecha(task.dueDate);
+// para que los botones Mark As Done y Eliminar sepan sobre qué tarea actuar
+function createTaskHtml(id, name, description, dueDate, status, priority, category) {
+  const hecha = status === 'DONE';
+  const nombre = escaparHtml(name);
+  const fecha = leerFecha(dueDate);
   const relativo = textoRelativo(fecha);
-  // Una tarea completada ya no "vence": solo se muestra su fecha
-  const textoRelativoHtml = completada
+  // Una tarea hecha ya no "vence": solo se muestra su fecha
+  const textoRelativoHtml = hecha
     ? ''
     : ` <span class="entrega-relativa ${relativo.clase}">${relativo.texto}</span>`;
 
   return `
-    <li class="card tarea${completada ? ' completada' : ''}" data-task-id="${task.id}">
+    <li class="card tarea${hecha ? ' completada' : ''}" data-task-id="${id}">
       <div class="card-body tarea-cuerpo">
-        <button class="btn-completar" type="button" aria-pressed="${completada}" aria-label="${completada ? 'Marcar como pendiente' : 'Marcar como completada'}: ${nombre}">
+        <button class="btn-completar done-button" type="button" aria-pressed="${hecha}" aria-label="${hecha ? 'Marcar como pendiente' : 'Marcar como hecha'}: ${nombre}">
           <i class="bi bi-check-lg" aria-hidden="true"></i>
+          <span class="visually-hidden">Mark As Done</span>
         </button>
         <div class="tarea-contenido">
           <h3 class="card-title tarea-titulo"><span>${nombre}</span></h3>
-          <p class="card-text tarea-desc">${escaparHtml(task.description)}</p>
+          <p class="card-text tarea-desc">${escaparHtml(description)}</p>
           <div class="tarea-etiquetas">
             <span class="badge rounded-pill estado"><span class="estado-pendiente">Por hacer</span><span class="estado-completada">Completada</span></span>
-            <span class="prioridad prioridad-${task.priority}">${TEXTO_PRIORIDAD[task.priority]}</span>
-            <span class="categoria">${TEXTO_CATEGORIA[task.category]}</span>
+            <span class="prioridad prioridad-${priority}">${TEXTO_PRIORIDAD[priority]}</span>
+            <span class="categoria">${TEXTO_CATEGORIA[category]}</span>
           </div>
-          <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="${task.dueDate}">${fecha.getDate()} ${MESES[fecha.getMonth()]} ${fecha.getFullYear()}</time>${textoRelativoHtml}</p>
+          <p class="tarea-entrega"><i class="bi bi-calendar-event" aria-hidden="true"></i> Entrega: <time datetime="${dueDate}">${fecha.getDate()} ${MESES[fecha.getMonth()]} ${fecha.getFullYear()}</time>${textoRelativoHtml}</p>
         </div>
         <div class="tarea-acciones">
           <button class="delete-button btn btn-eliminar" type="button" aria-label="Eliminar: ${nombre}">
@@ -114,12 +117,17 @@ class TaskManager {
     this.tasks = newTasks;
   }
 
-  // Cambia una tarea entre PORHACER y COMPLETADA (botón de completar de la tarjeta)
-  toggleTaskStatus(taskId) {
-    const task = this.tasks.find((tarea) => tarea.id === taskId);
-    if (task) {
-      task.status = task.status === 'COMPLETADA' ? 'PORHACER' : 'COMPLETADA';
+  // Busca una tarea por su id; devuelve undefined si no existe
+  getTaskById(taskId) {
+    let foundTask;
+
+    for (let task of this.tasks) {
+      if (task.id === taskId) {
+        foundTask = task;
+      }
     }
+
+    return foundTask;
   }
 
   // localStorage solo guarda texto: las tareas se convierten a JSON.
@@ -137,6 +145,11 @@ class TaskManager {
 
     this.tasks = JSON.parse(tasksJson);
     this.currentId = Number(localStorage.getItem('escampa-currentId')) || 0;
+
+    // Antes de la Tarea 7 una tarea hecha se guardaba como COMPLETADA
+    for (let task of this.tasks) {
+      if (task.status === 'COMPLETADA') task.status = 'DONE';
+    }
     return true;
   }
 
@@ -145,7 +158,7 @@ class TaskManager {
     const tasksHtmlList = [];
 
     for (let task of this.tasks) {
-      tasksHtmlList.unshift(createTaskHtml(task));
+      tasksHtmlList.unshift(createTaskHtml(task.id, task.name, task.description, task.dueDate, task.status, task.priority, task.category));
     }
 
     document.querySelector('#tasksList').innerHTML = tasksHtmlList.join('');
