@@ -24,12 +24,12 @@ JavaScript valida el formulario, crea, completa y elimina tareas, y las guarda e
 - **Clase `TaskManager`** (`js/taskManager.js`): guarda las tareas en `tasks` y lleva un contador `currentId`.
   - `addTask(name, description, dueDate, status)` sube el contador y agrega con `push()` una tarea con `id` consecutivo y estado inicial `PORHACER`. Acepta además la prioridad y la categoría.
   - `deleteTask(taskId)` arma un array `newTasks` con todas las tareas menos la del id recibido y lo asigna a `tasks`.
-  - `toggleTaskStatus(taskId)` cambia una tarea entre `PORHACER` y `COMPLETADA`.
+  - `getTaskById(taskId)` recorre `tasks` y devuelve la tarea con ese id.
   - `save()` y `load()` guardan y recuperan las tareas y el contador en `localStorage`.
-  - `render()` dibuja la lista con `createTaskHtml(task)`, que arma el HTML de cada tarjeta con su `data-task-id`.
+  - `render()` dibuja la lista con `createTaskHtml(id, name, description, dueDate, status, …)`, que arma el HTML de cada tarjeta con su `data-task-id`.
 - **Tarjetas de tarea** con el componente Card de Bootstrap: nombre, descripción, estado (*Por hacer* o *Completada*), prioridad, categoría, fecha de entrega y cuántos días faltan o pasaron.
 - **Agregar tareas**: con datos válidos, el formulario llama a `addTask()`, guarda, vuelve a dibujar la lista con la tarea nueva arriba, confirma con una alerta verde y queda limpio.
-- **Completar tareas**: el botón de cada tarjeta funciona como interruptor. El título se tacha con una línea que se dibuja de izquierda a derecha, el estado cambia a *Completada* y queda guardado.
+- **Marcar como hecha** (Mark As Done): cada tarjeta tiene un botón `done-button`. Al tocarlo se lee el `data-task-id`, se busca la tarea con `getTaskById()`, su `status` cambia a `DONE` y la lista se vuelve a dibujar con `render()`. Funciona como interruptor: tocarlo otra vez la devuelve a `PORHACER`. El título se tacha con una línea que se dibuja de izquierda a derecha y el estado queda guardado.
 - **Eliminar tareas**: cada tarjeta tiene un botón **Eliminar** (`delete-button`). Al tocarlo se lee el `data-task-id` de la tarjeta, se pasa a número y se llama a `deleteTask()`, `save()` y `render()`. La tarea eliminada no vuelve al recargar.
 - **Tareas guardadas**: todo se conserva en `localStorage`. En la primera visita aparecen cinco tareas de ejemplo; si se borran, no vuelven.
 - **Filtros** *Todas*, *Pendientes* y *Completadas*, un conteo de tareas completadas y un mensaje cuando la lista queda vacía.
@@ -72,6 +72,8 @@ No necesita instalar nada: Bootstrap y las fuentes se cargan desde internet.
 - [x] **Tarea 4**: clase `TaskManager` en `js/taskManager.js` y botón para marcar o desmarcar una tarea como completada.
 - [x] **Tarea 5**: método `addTask()` con `currentId` y formulario conectado para registrar y mostrar tareas nuevas.
 - [x] **Tarea 6**: botón Eliminar con `deleteTask()`, y tareas guardadas en `localStorage` con `save()` y dibujadas con `render()`.
+- [x] **Tarea 7**: botón `done-button` con `getTaskById()` para cambiar el estado de una tarea a `DONE` y volver a dibujar la lista.
+- [ ] **Tarea 8**: persistir las tareas en `localStorage`.
 - [ ] **Backend**: API con Java y Spring Boot, base de datos SQL y conexión con el frontend.
 
 ## Créditos de los sonidos
